@@ -1,0 +1,34 @@
+package com.gestetner.servvista.application.dto.reports;
+
+import com.gestetner.servvista.domain.Enums.Agreements.AgreementStatus;
+import com.gestetner.servvista.domain.Enums.Agreements.AgreementType;
+import com.gestetner.servvista.domain.Enums.Organization.Area;
+import com.gestetner.servvista.domain.Enums.Organization.Division;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public record MachineAgreementReportRow(
+        Long agreementId,
+        String agreementNumber,
+        AgreementType agreementType,
+        AgreementStatus agreementStatus,
+        LocalDate agreementStartDate,
+        LocalDate agreementEndDate,
+        BigDecimal annualPayment,
+        BigDecimal fullPayment,
+        Long machineId,
+        String machineReferenceNumber,
+        String serialNumber,
+        String modelNumber,
+        String modelName,
+        Long customerId,
+        String customerName,
+        Long customerSiteId,
+        String siteName,
+        Area area,
+        Long mainTechnicianId,
+        String mainTechnicianName,
+        Division division
+) {
+}

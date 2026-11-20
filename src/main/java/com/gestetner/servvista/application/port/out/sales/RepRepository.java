@@ -1,0 +1,14 @@
+package com.gestetner.servvista.application.port.out.sales;
+
+import com.gestetner.servvista.domain.entity.sales.Rep;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Spring Data JPA repository for {@link Rep}.
+ */
+@Repository
+public interface RepRepository extends JpaRepository<Rep, Long> {
+    boolean existsByRepCodeIgnoreCase(String repCode);
+    boolean existsByRepCodeIgnoreCaseAndRepIdNot(String repCode, Long repId);
+}

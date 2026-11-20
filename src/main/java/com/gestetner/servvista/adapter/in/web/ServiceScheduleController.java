@@ -1,0 +1,89 @@
+package com.gestetner.servvista.adapter.in.web;
+
+import com.gestetner.servvista.application.dto.services.ServiceScheduleResponse;
+import com.gestetner.servvista.application.dto.services.ServiceVisitCompleteRequest;
+import com.gestetner.servvista.application.dto.services.ServiceVisitStartRequest;
+import com.gestetner.servvista.application.dto.services.ServiceVisitStartResponse;
+import com.gestetner.servvista.application.service.ServiceScheduleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import com.gestetner.servvista.domain.Enums.Services.ServiceScheduleStatus;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/service-schedules")
+@Tag(name = "Service Schedules")
+@PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR', 'TECHNICIAN')")
+public class ServiceScheduleController {
+
+    private final ServiceScheduleService serviceScheduleService;
+
+    public ServiceScheduleController(ServiceScheduleService serviceScheduleService) {
+        this.serviceScheduleService = serviceScheduleService;
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all service schedules")
+    public ResponseEntity<Page<ServiceScheduleResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) ServiceScheduleStatus status) {
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        return ResponseEntity.ok(serviceScheduleService.getPage(
+                search, status, PageRequest.of(Math.max(page, 0), safeSize,
+                        Sort.by(Sort.Order.asc("expectedVisitDate"),
+                                Sort.Order.asc("serviceScheduleId")))));
+    }
+
+    @GetMapping("/{scheduleId}")
+    @Operation(summary = "Get a service schedule by ID")
+    public ResponseEntity<ServiceScheduleResponse> getById(@PathVariable Long scheduleId) {
+        return ResponseEntity.ok(serviceScheduleService.getById(scheduleId));
+    }
+//    test
+
+    @GetMapping("/agreement/{agreementId}")
+    @Operation(summary = "Get service schedules by agreement")
+    public ResponseEntity<List<ServiceScheduleResponse>> getByAgreement(
+            @PathVariable Long agreementId) {
+        return ResponseEntity.ok(serviceScheduleService.getByAgreement(agreementId));
+    }
+
+    @GetMapping("/machine/{machineId}")
+    @Operation(summary = "Get service schedules by machine")
+    public ResponseEntity<List<ServiceScheduleResponse>> getByMachine(
+            @PathVariable Long machineId) {
+        return ResponseEntity.ok(serviceScheduleService.getByMachine(machineId));
+    }
+
+    @PatchMapping("/{scheduleId}/start")
+    @Operation(summary = "Start a service visit and capture its meter reading")
+    public ResponseEntity<ServiceVisitStartResponse> start(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody ServiceVisitStartRequest request) {
+        return ResponseEntity.ok(serviceScheduleService.start(scheduleId, request));
+    }
+
+    @PatchMapping("/{scheduleId}/complete")
+    @Operation(summary = "Complete a started service visit")
+    public ResponseEntity<ServiceScheduleResponse> complete(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody ServiceVisitCompleteRequest request) {
+        return ResponseEntity.ok(serviceScheduleService.complete(scheduleId, request));
+    }
+}
